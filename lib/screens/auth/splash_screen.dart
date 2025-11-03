@@ -5,7 +5,7 @@ import '../../core/constants/app_constants.dart';
 import '../../core/constants/app_text_styles.dart';
 import '../../providers/auth_provider.dart';
 import '../home/main_navigation.dart';
-import 'login_screen.dart';
+import 'welcome_screen.dart';
 
 /// Splash screen - initial screen that checks authentication
 class SplashScreen extends StatefulWidget {
@@ -38,7 +38,7 @@ class _SplashScreenState extends State<SplashScreen> {
       );
     } else {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        MaterialPageRoute(builder: (_) => const WelcomeScreen()),
       );
     }
   }
