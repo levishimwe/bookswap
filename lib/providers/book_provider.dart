@@ -1,13 +1,14 @@
-// Removed file & bytes imports since we now use direct image URLs
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:image/image.dart' as img;
 import 'package:flutter/material.dart';
 import '../models/book_model.dart';
 import '../services/firestore_service.dart';
-import '../services/storage_service.dart';
+// Storage uploads removed; images are stored inline as base64 in Firestore
 
 /// Book listings state provider
 class BookProvider with ChangeNotifier {
   final FirestoreService _firestoreService = FirestoreService();
-  final StorageService _storageService = StorageService();
   
   List<BookModel> _allBooks = [];
   List<BookModel> _myBooks = [];
@@ -41,7 +42,7 @@ class BookProvider with ChangeNotifier {
     required String condition,
     required String ownerId,
     required String ownerName,
-    required String imageUrl, // now provided directly as external or asset path
+    Uint8List? imageBytes, // picked image bytes (web or mobile)
     String? linkUrl,
     String? videoUrl,
   }) async {
@@ -49,13 +50,21 @@ class BookProvider with ChangeNotifier {
       _setLoading(true);
       _errorMessage = null;
       
+      // Prepare base64 image if provided
+      String? imageBase64;
+      if (imageBytes != null && imageBytes.isNotEmpty) {
+        final processed = await _compressBytes(imageBytes);
+        imageBase64 = base64Encode(processed);
+      }
+
       // Create book model
       final book = BookModel(
         id: '',
         title: title,
         author: author,
         condition: condition,
-        imageUrl: imageUrl,
+        imageUrl: null,
+        imageBase64: imageBase64,
         ownerId: ownerId,
         ownerName: ownerName,
         postedAt: DateTime.now(),
@@ -82,7 +91,7 @@ class BookProvider with ChangeNotifier {
     required String title,
     required String author,
     required String condition,
-    required String imageUrl, // direct path or URL
+    Uint8List? imageBytes,
     required String ownerId,
     String? linkUrl,
     String? videoUrl,
@@ -91,12 +100,19 @@ class BookProvider with ChangeNotifier {
       _setLoading(true);
       _errorMessage = null;
       
+      // Prepare base64 image if provided
+      String? imageBase64;
+      if (imageBytes != null && imageBytes.isNotEmpty) {
+        final processed = await _compressBytes(imageBytes);
+        imageBase64 = base64Encode(processed);
+      }
+
       // Update Firestore document
       final updates = {
         'title': title,
         'author': author,
         'condition': condition,
-        'imageUrl': imageUrl,
+        if (imageBase64 != null) 'imageBase64': imageBase64,
         if (linkUrl != null) 'linkUrl': linkUrl,
         if (videoUrl != null) 'videoUrl': videoUrl,
       };
@@ -117,12 +133,7 @@ class BookProvider with ChangeNotifier {
     try {
       _setLoading(true);
       _errorMessage = null;
-      
-
-      if (imageUrl != null) {
-        await _storageService.deleteImage(imageUrl);
-      }
-      
+      // No external storage deletion needed when using base64 inline images
       
       await _firestoreService.deleteBook(bookId);
       
@@ -168,6 +179,22 @@ class BookProvider with ChangeNotifier {
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
+  }
+
+  // Compress images so they fit within Firestore document limits
+  Future<Uint8List> _compressBytes(Uint8List input, {int maxWidth = 800, int quality = 80}) async {
+    try {
+      final img.Image? decoded = img.decodeImage(input);
+      if (decoded == null) return input;
+      img.Image processed = decoded;
+      if (decoded.width > maxWidth) {
+        processed = img.copyResize(decoded, width: maxWidth);
+      }
+      final List<int> jpg = img.encodeJpg(processed, quality: quality);
+      return Uint8List.fromList(jpg);
+    } catch (_) {
+      return input;
+    }
   }
   
 

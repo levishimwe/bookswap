@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:convert';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_text_styles.dart';
 import '../../core/utils/helpers.dart';
@@ -38,7 +39,7 @@ class BookCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: InkWell(
-        onTap: onTap,
+        onTap: showActions ? null : onTap,
         borderRadius: BorderRadius.circular(12),
         child: content,
       ),
@@ -197,6 +198,15 @@ class BookCard extends StatelessWidget {
 
   Widget _resolveImageWidget() {
     final path = book.imageUrl;
+    // Prefer inline base64 image if available
+    if (book.imageBase64 != null && book.imageBase64!.isNotEmpty) {
+      try {
+        final bytes = const Base64Decoder().convert(book.imageBase64!);
+        return Image.memory(bytes, fit: BoxFit.cover, errorBuilder: (c, e, s) => _buildPlaceholder());
+      } catch (_) {
+        // fall through to other methods
+      }
+    }
     if (path == null || path.isEmpty) return _buildPlaceholder();
     // If user provided a direct http(s) link use network image
     if (path.startsWith('http://') || path.startsWith('https://')) {

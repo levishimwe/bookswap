@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/utils/helpers.dart';
 import '../../providers/book_provider.dart';
 import '../../widgets/book/book_card.dart';
 import '../../widgets/common/loading_indicator.dart';
@@ -113,7 +114,19 @@ class MyListingsScreen extends StatelessWidget {
                   );
                   
                   if (confirm == true && context.mounted) {
-                    await bookProvider.deleteBook(book.id, book.imageUrl);
+                    final ok = await bookProvider.deleteBook(book.id, null);
+                    if (ok) {
+                      if (context.mounted) {
+                        Helpers.showSuccessSnackBar(context, 'Book deleted');
+                      }
+                    } else {
+                      if (context.mounted) {
+                        Helpers.showErrorSnackBar(
+                          context,
+                          bookProvider.errorMessage ?? 'Failed to delete book',
+                        );
+                      }
+                    }
                   }
                 },
               );

@@ -1,4 +1,6 @@
-// Removed local file picking; using direct image URL instead.
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -30,21 +32,20 @@ class _PostBookScreenState extends State<PostBookScreen> {
   final _linkUrlController = TextEditingController();
   final _videoUrlController = TextEditingController();
   String _selectedCondition = AppConstants.conditionGood;
-  final _imageUrlController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
+  Uint8List? _pickedBytes; // supports web & mobile
   
   bool get isEditing => widget.bookToEdit != null;
   
   @override
   void initState() {
     super.initState();
-    _imageUrlController.addListener(() => setState(() {}));
     if (isEditing) {
       _titleController.text = widget.bookToEdit!.title;
       _authorController.text = widget.bookToEdit!.author;
       _selectedCondition = widget.bookToEdit!.condition;
       _linkUrlController.text = widget.bookToEdit!.linkUrl ?? '';
       _videoUrlController.text = widget.bookToEdit!.videoUrl ?? '';
-      _imageUrlController.text = widget.bookToEdit!.imageUrl ?? '';
     }
   }
   
@@ -54,8 +55,19 @@ class _PostBookScreenState extends State<PostBookScreen> {
     _authorController.dispose();
     _linkUrlController.dispose();
     _videoUrlController.dispose();
-    _imageUrlController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    final XFile? file = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+    if (file == null) return;
+    if (kIsWeb) {
+      final bytes = await file.readAsBytes();
+      setState(() => _pickedBytes = bytes);
+    } else {
+      final bytes = await file.readAsBytes();
+      setState(() => _pickedBytes = bytes);
+    }
   }
   // Handle form submission
   // Handle form submission
@@ -72,7 +84,7 @@ class _PostBookScreenState extends State<PostBookScreen> {
         title: _titleController.text.trim(),
         author: _authorController.text.trim(),
         condition: _selectedCondition,
-        imageUrl: _imageUrlController.text.trim(),
+  imageBytes: _pickedBytes,
         ownerId: authProvider.currentUserId!,
         linkUrl: _linkUrlController.text.trim().isEmpty
             ? null
@@ -88,7 +100,7 @@ class _PostBookScreenState extends State<PostBookScreen> {
         condition: _selectedCondition,
         ownerId: authProvider.currentUserId!,
         ownerName: authProvider.currentUser!.displayName,
-        imageUrl: _imageUrlController.text.trim(),
+  imageBytes: _pickedBytes,
         linkUrl: _linkUrlController.text.trim().isEmpty
             ? null
             : _linkUrlController.text.trim(),
@@ -127,51 +139,32 @@ class _PostBookScreenState extends State<PostBookScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Image URL field & live preview
-              Text('Book Cover Image URL', style: AppTextStyles.h4),
+              // Image picker & preview
+              Text('Book Cover', style: AppTextStyles.h4),
               const SizedBox(height: 8),
-              CustomTextField(
-                controller: _imageUrlController,
-                label: 'Google Drive Image Link',
-                hint: 'https://drive.google.com/uc?export=view&id=YOUR_FILE_ID',
-                keyboardType: TextInputType.url,
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) {
-                    return 'Image URL required';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              Container(
-                height: 180,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.divider),
+              GestureDetector(
+                onTap: _pickImage,
+                child: Container(
+                  height: 200,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.divider),
+                    color: AppColors.cardBackground,
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: _pickedBytes == null
+                      ? Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.add_a_photo, size: 48, color: Colors.black54),
+                              const SizedBox(height: 8),
+                              Text('Tap to pick a cover image', style: AppTextStyles.caption),
+                            ],
+                          ),
+                        )
+                      : Image.memory(_pickedBytes!, fit: BoxFit.cover),
                 ),
-                clipBehavior: Clip.antiAlias,
-                child: _imageUrlController.text.trim().isEmpty
-                    ? Center(
-                        child: Text(
-                          'Enter an image URL then preview appears',
-                          style: AppTextStyles.caption,
-                        ),
-                      )
-                    : (_imageUrlController.text.startsWith('http')
-                        ? Image.network(
-                            _imageUrlController.text.trim(),
-                            fit: BoxFit.cover,
-                            errorBuilder: (c, e, s) => Center(
-                              child: Text('Invalid image URL', style: AppTextStyles.caption),
-                            ),
-                          )
-                        : Image.asset(
-                            _imageUrlController.text.trim(),
-                            fit: BoxFit.cover,
-                            errorBuilder: (c, e, s) => Center(
-                              child: Text('Asset not found', style: AppTextStyles.caption),
-                            ),
-                          )),
               ),
               const SizedBox(height: 24),
               

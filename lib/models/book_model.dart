@@ -7,6 +7,7 @@ class BookModel {
   final String author;
   final String condition; // New, Like New, Good, Used
   final String? imageUrl;
+  final String? imageBase64; // Inline base64-encoded cover image
   final String? linkUrl; // Optional reading link (PDF/web)
   final String? videoUrl; // Optional YouTube/video link
   final List<String> allowedUserIds; // Users approved to access links
@@ -22,6 +23,7 @@ class BookModel {
     required this.author,
     required this.condition,
     this.imageUrl,
+    this.imageBase64,
     this.linkUrl,
     this.videoUrl,
     this.allowedUserIds = const [],
@@ -41,6 +43,7 @@ class BookModel {
       author: data['author'] ?? '',
       condition: data['condition'] ?? 'Used',
       imageUrl: data['imageUrl'],
+      imageBase64: data['imageBase64'],
       linkUrl: data['linkUrl'],
       videoUrl: data['videoUrl'],
       allowedUserIds: (data['allowedUserIds'] as List?)?.cast<String>() ?? const [],
@@ -59,6 +62,7 @@ class BookModel {
       'author': author,
       'condition': condition,
       'imageUrl': imageUrl,
+      'imageBase64': imageBase64,
       'linkUrl': linkUrl,
       'videoUrl': videoUrl,
       'allowedUserIds': allowedUserIds,
@@ -77,6 +81,7 @@ class BookModel {
     String? author,
     String? condition,
     String? imageUrl,
+    String? imageBase64,
     String? linkUrl,
     String? videoUrl,
     List<String>? allowedUserIds,
@@ -92,6 +97,7 @@ class BookModel {
       author: author ?? this.author,
       condition: condition ?? this.condition,
       imageUrl: imageUrl ?? this.imageUrl,
+      imageBase64: imageBase64 ?? this.imageBase64,
       linkUrl: linkUrl ?? this.linkUrl,
       videoUrl: videoUrl ?? this.videoUrl,
       allowedUserIds: allowedUserIds ?? this.allowedUserIds,
