@@ -40,7 +40,7 @@ class AppTheme {
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: AppColors.primaryNavy,
         selectedItemColor: AppColors.accentYellow,
-        unselectedItemColor: AppColors.textSecondary,
+        unselectedItemColor: Colors.black87, // Changed to black for visibility
         type: BottomNavigationBarType.fixed,
         elevation: 8,
         selectedLabelStyle: TextStyle(
@@ -124,10 +124,10 @@ class AppTheme {
           borderSide: const BorderSide(color: AppColors.error, width: 2),
         ),
         labelStyle: AppTextStyles.bodyMedium.copyWith(
-          color: AppColors.textSecondary,
+          color: Colors.black, // Changed to black for visibility
         ),
         hintStyle: AppTextStyles.bodyMedium.copyWith(
-          color: AppColors.textSecondary,
+          color: Colors.black54, // Changed to dark gray for visibility
         ),
         errorStyle: AppTextStyles.bodySmall.copyWith(
           color: AppColors.error,
@@ -159,6 +159,119 @@ class AppTheme {
         bodySmall: AppTextStyles.bodySmall,
         labelLarge: AppTextStyles.button,
         labelSmall: AppTextStyles.caption,
+      ),
+    );
+  }
+
+  static ThemeData get darkTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      primaryColor: AppColors.primaryNavy,
+      scaffoldBackgroundColor: const Color(0xFF0F1326),
+      colorScheme: const ColorScheme.dark(
+        primary: AppColors.accentYellow,
+        secondary: AppColors.accentYellow,
+        surface: Color(0xFF1A1F36),
+        error: AppColors.error,
+        onPrimary: AppColors.textPrimary,
+        onSecondary: AppColors.textPrimary,
+        onSurface: AppColors.textWhite,
+        onError: AppColors.textWhite,
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFF0F1326),
+        foregroundColor: AppColors.textWhite,
+        centerTitle: true,
+        elevation: 0,
+      ),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: Color(0xFF0F1326),
+        selectedItemColor: AppColors.accentYellow,
+        unselectedItemColor: Colors.black54,
+        type: BottomNavigationBarType.fixed,
+        elevation: 8,
+      ),
+      cardTheme: CardThemeData(
+        color: const Color(0xFF1A1F36),
+        elevation: 1.0,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+        ),
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.accentYellow,
+          foregroundColor: AppColors.textPrimary,
+          elevation: 2,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          textStyle: AppTextStyles.button,
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.accentYellow,
+          textStyle: AppTextStyles.button,
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: const Color(0xFF1A1F36),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.divider),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.divider),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.accentYellow, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.error),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.error, width: 2),
+        ),
+        labelStyle: const TextStyle(
+          color: Colors.black,
+        ),
+        hintStyle: const TextStyle(
+          color: Colors.black54,
+        ),
+        errorStyle: AppTextStyles.bodySmall.copyWith(
+          color: AppColors.error,
+        ),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: AppColors.accentYellow,
+        foregroundColor: AppColors.textPrimary,
+        elevation: 4,
+      ),
+      dividerTheme: const DividerThemeData(
+        color: AppColors.divider,
+        thickness: 1,
+        space: 1,
+      ),
+      textTheme: TextTheme(
+        displayLarge: AppTextStyles.h1.copyWith(color: AppColors.textWhite),
+        displayMedium: AppTextStyles.h2.copyWith(color: AppColors.textWhite),
+        displaySmall: AppTextStyles.h3.copyWith(color: AppColors.textWhite),
+        headlineMedium: AppTextStyles.h4.copyWith(color: AppColors.textWhite),
+        bodyLarge: AppTextStyles.bodyLarge.copyWith(color: AppColors.textWhite),
+        bodyMedium: AppTextStyles.bodyMedium.copyWith(color: AppColors.textWhite),
+        bodySmall: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
+        labelLarge: AppTextStyles.button.copyWith(color: AppColors.textWhite),
+        labelSmall: AppTextStyles.caption.copyWith(color: Colors.white70),
       ),
     );
   }

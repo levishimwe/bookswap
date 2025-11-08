@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_text_styles.dart';
@@ -8,6 +9,7 @@ import '../../models/book_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/swap_provider.dart';
 import '../../providers/chat_provider.dart';
+import '../../providers/access_request_provider.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/book/book_condition_chip.dart';
 import '../chats/chat_screen.dart';
@@ -23,6 +25,7 @@ class BookDetailScreen extends StatelessWidget {
     final authProvider = Provider.of<AuthProvider>(context);
     final currentUserId = authProvider.currentUserId ?? '';
     final isOwner = book.ownerId == currentUserId;
+  final isApproved = isOwner || book.allowedUserIds.contains(currentUserId);
     
     return Scaffold(
       appBar: AppBar(
@@ -93,6 +96,11 @@ class BookDetailScreen extends StatelessWidget {
                   // Action Buttons
                   if (!isOwner && book.isAvailable)
                     _buildActionButtons(context, currentUserId),
+
+                  const SizedBox(height: 12),
+                  // Read/Watch buttons if links exist
+                  if (book.linkUrl != null || book.videoUrl != null)
+                    _buildLinkButtons(context, isApproved),
                   
                   if (!book.isAvailable)
                     Container(
@@ -176,6 +184,68 @@ class BookDetailScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  Widget _buildLinkButtons(BuildContext context, bool isApproved) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (book.linkUrl != null) ...[
+          CustomButton(
+            text: isApproved ? 'Read' : 'Request Access to Read',
+            onPressed: () async {
+              if (isApproved) {
+                final uri = Uri.parse(book.linkUrl!);
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              } else {
+                _requestAccess(context, 'read');
+              }
+            },
+            icon: Icons.menu_book,
+            isOutlined: !isApproved,
+          ),
+          const SizedBox(height: 12),
+        ],
+        if (book.videoUrl != null) ...[
+          CustomButton(
+            text: isApproved ? 'Watch' : 'Request Access to Watch',
+            onPressed: () async {
+              if (isApproved) {
+                final uri = Uri.parse(book.videoUrl!);
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              } else {
+                _requestAccess(context, 'watch');
+              }
+            },
+            icon: Icons.play_circle_fill,
+            isOutlined: !isApproved,
+          ),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _requestAccess(BuildContext context, String type) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final provider = Provider.of<AccessRequestProvider>(context, listen: false);
+    final ok = await provider.sendRequest(
+      bookId: book.id,
+      bookTitle: book.title,
+      ownerId: book.ownerId,
+      requesterId: authProvider.currentUserId!,
+      requesterName: authProvider.currentUser!.displayName,
+      type: type,
+    );
+    if (!context.mounted) return;
+    if (ok) {
+      Helpers.showSuccessSnackBar(context, 'Request sent to owner');
+    } else {
+      Helpers.showErrorSnackBar(context, provider.errorMessage ?? 'Failed to send request');
+    }
   }
   
   Future<void> _handleSwapOffer(BuildContext context) async {

@@ -5,6 +5,7 @@ import '../../providers/book_provider.dart';
 import '../../widgets/book/book_card.dart';
 import '../../widgets/common/loading_indicator.dart';
 import 'post_book_screen.dart';
+import '../swaps/swap_requests_screen.dart';
 
 /// My Listings screen showing user's posted books
 class MyListingsScreen extends StatelessWidget {
@@ -15,6 +16,20 @@ class MyListingsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Listings'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.swap_horiz),
+            tooltip: 'Swap Requests',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const SwapRequestsScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Consumer<BookProvider>(
         builder: (context, bookProvider, _) {

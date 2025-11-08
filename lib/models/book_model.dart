@@ -7,6 +7,9 @@ class BookModel {
   final String author;
   final String condition; // New, Like New, Good, Used
   final String? imageUrl;
+  final String? linkUrl; // Optional reading link (PDF/web)
+  final String? videoUrl; // Optional YouTube/video link
+  final List<String> allowedUserIds; // Users approved to access links
   final String ownerId;
   final String ownerName;
   final DateTime postedAt;
@@ -19,6 +22,9 @@ class BookModel {
     required this.author,
     required this.condition,
     this.imageUrl,
+    this.linkUrl,
+    this.videoUrl,
+    this.allowedUserIds = const [],
     required this.ownerId,
     required this.ownerName,
     required this.postedAt,
@@ -35,6 +41,9 @@ class BookModel {
       author: data['author'] ?? '',
       condition: data['condition'] ?? 'Used',
       imageUrl: data['imageUrl'],
+      linkUrl: data['linkUrl'],
+      videoUrl: data['videoUrl'],
+      allowedUserIds: (data['allowedUserIds'] as List?)?.cast<String>() ?? const [],
       ownerId: data['ownerId'] ?? '',
       ownerName: data['ownerName'] ?? '',
       postedAt: (data['postedAt'] as Timestamp).toDate(),
@@ -50,6 +59,9 @@ class BookModel {
       'author': author,
       'condition': condition,
       'imageUrl': imageUrl,
+      'linkUrl': linkUrl,
+      'videoUrl': videoUrl,
+      'allowedUserIds': allowedUserIds,
       'ownerId': ownerId,
       'ownerName': ownerName,
       'postedAt': Timestamp.fromDate(postedAt),
@@ -65,6 +77,9 @@ class BookModel {
     String? author,
     String? condition,
     String? imageUrl,
+    String? linkUrl,
+    String? videoUrl,
+    List<String>? allowedUserIds,
     String? ownerId,
     String? ownerName,
     DateTime? postedAt,
@@ -77,6 +92,9 @@ class BookModel {
       author: author ?? this.author,
       condition: condition ?? this.condition,
       imageUrl: imageUrl ?? this.imageUrl,
+      linkUrl: linkUrl ?? this.linkUrl,
+      videoUrl: videoUrl ?? this.videoUrl,
+      allowedUserIds: allowedUserIds ?? this.allowedUserIds,
       ownerId: ownerId ?? this.ownerId,
       ownerName: ownerName ?? this.ownerName,
       postedAt: postedAt ?? this.postedAt,

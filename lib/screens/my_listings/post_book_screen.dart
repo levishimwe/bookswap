@@ -1,7 +1,7 @@
-import 'dart:io';
+// Removed local file picking; using direct image URL instead.
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:image_picker/image_picker.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/constants/app_text_styles.dart';
@@ -27,19 +27,24 @@ class _PostBookScreenState extends State<PostBookScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _authorController = TextEditingController();
+  final _linkUrlController = TextEditingController();
+  final _videoUrlController = TextEditingController();
   String _selectedCondition = AppConstants.conditionGood;
-  File? _imageFile;
-  final ImagePicker _picker = ImagePicker();
+  final _imageUrlController = TextEditingController();
   
   bool get isEditing => widget.bookToEdit != null;
   
   @override
   void initState() {
     super.initState();
+    _imageUrlController.addListener(() => setState(() {}));
     if (isEditing) {
       _titleController.text = widget.bookToEdit!.title;
       _authorController.text = widget.bookToEdit!.author;
       _selectedCondition = widget.bookToEdit!.condition;
+      _linkUrlController.text = widget.bookToEdit!.linkUrl ?? '';
+      _videoUrlController.text = widget.bookToEdit!.videoUrl ?? '';
+      _imageUrlController.text = widget.bookToEdit!.imageUrl ?? '';
     }
   }
   
@@ -47,18 +52,13 @@ class _PostBookScreenState extends State<PostBookScreen> {
   void dispose() {
     _titleController.dispose();
     _authorController.dispose();
+    _linkUrlController.dispose();
+    _videoUrlController.dispose();
+    _imageUrlController.dispose();
     super.dispose();
   }
-  
-  Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        _imageFile = File(image.path);
-      });
-    }
-  }
-  
+  // Handle form submission
+  // Handle form submission
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
     
@@ -72,9 +72,14 @@ class _PostBookScreenState extends State<PostBookScreen> {
         title: _titleController.text.trim(),
         author: _authorController.text.trim(),
         condition: _selectedCondition,
-        existingImageUrl: widget.bookToEdit!.imageUrl,
-        newImageFile: _imageFile,
+        imageUrl: _imageUrlController.text.trim(),
         ownerId: authProvider.currentUserId!,
+        linkUrl: _linkUrlController.text.trim().isEmpty
+            ? null
+            : _linkUrlController.text.trim(),
+        videoUrl: _videoUrlController.text.trim().isEmpty
+            ? null
+            : _videoUrlController.text.trim(),
       );
     } else {
       success = await bookProvider.createBook(
@@ -83,7 +88,13 @@ class _PostBookScreenState extends State<PostBookScreen> {
         condition: _selectedCondition,
         ownerId: authProvider.currentUserId!,
         ownerName: authProvider.currentUser!.displayName,
-        imageFile: _imageFile,
+        imageUrl: _imageUrlController.text.trim(),
+        linkUrl: _linkUrlController.text.trim().isEmpty
+            ? null
+            : _linkUrlController.text.trim(),
+        videoUrl: _videoUrlController.text.trim().isEmpty
+            ? null
+            : _videoUrlController.text.trim(),
       );
     }
     
@@ -116,47 +127,51 @@ class _PostBookScreenState extends State<PostBookScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Image Picker
-              GestureDetector(
-                onTap: _pickImage,
-                child: Container(
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: AppColors.backgroundLight,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.divider),
-                  ),
-                  child: _imageFile != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.file(_imageFile!, fit: BoxFit.cover),
-                        )
-                      : widget.bookToEdit?.imageUrl != null && _imageFile == null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.network(
-                                widget.bookToEdit!.imageUrl!,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          : Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.add_photo_alternate,
-                                  size: 60,
-                                  color: AppColors.textSecondary,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Tap to add book cover',
-                                  style: AppTextStyles.bodyMedium.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
+              // Image URL field & live preview
+              Text('Book Cover Image URL', style: AppTextStyles.h4),
+              const SizedBox(height: 8),
+              CustomTextField(
+                controller: _imageUrlController,
+                label: 'Google Drive Image Link',
+                hint: 'https://drive.google.com/uc?export=view&id=YOUR_FILE_ID',
+                keyboardType: TextInputType.url,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) {
+                    return 'Image URL required';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              Container(
+                height: 180,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.divider),
                 ),
+                clipBehavior: Clip.antiAlias,
+                child: _imageUrlController.text.trim().isEmpty
+                    ? Center(
+                        child: Text(
+                          'Enter an image URL then preview appears',
+                          style: AppTextStyles.caption,
+                        ),
+                      )
+                    : (_imageUrlController.text.startsWith('http')
+                        ? Image.network(
+                            _imageUrlController.text.trim(),
+                            fit: BoxFit.cover,
+                            errorBuilder: (c, e, s) => Center(
+                              child: Text('Invalid image URL', style: AppTextStyles.caption),
+                            ),
+                          )
+                        : Image.asset(
+                            _imageUrlController.text.trim(),
+                            fit: BoxFit.cover,
+                            errorBuilder: (c, e, s) => Center(
+                              child: Text('Asset not found', style: AppTextStyles.caption),
+                            ),
+                          )),
               ),
               const SizedBox(height: 24),
               
@@ -175,6 +190,24 @@ class _PostBookScreenState extends State<PostBookScreen> {
                 label: 'Author',
                 hint: 'Enter author name',
                 validator: Validators.validateAuthor,
+              ),
+              const SizedBox(height: 16),
+
+              // Optional Links
+              Text('Optional Links', style: AppTextStyles.h4),
+              const SizedBox(height: 12),
+              CustomTextField(
+                controller: _linkUrlController,
+                label: 'Reading Link (optional)',
+                hint: 'https://example.com/book.pdf',
+                keyboardType: TextInputType.url,
+              ),
+              const SizedBox(height: 12),
+              CustomTextField(
+                controller: _videoUrlController,
+                label: 'Video Link (optional)',
+                hint: 'https://youtube.com/...',
+                keyboardType: TextInputType.url,
               ),
               const SizedBox(height: 16),
               

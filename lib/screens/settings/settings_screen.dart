@@ -106,6 +106,23 @@ class SettingsScreen extends StatelessWidget {
             Consumer<SettingsProvider>(
               builder: (context, settingsProvider, _) {
                 return SwitchListTile(
+                  title: const Text('Dark Mode'),
+                  subtitle: const Text('Switch between light and dark themes'),
+                  value: settingsProvider.darkMode,
+                  onChanged: (value) {
+                    settingsProvider.toggleDarkMode(
+                      authProvider.currentUserId!,
+                      value,
+                    );
+                  },
+                  activeTrackColor: AppColors.primaryNavy.withAlpha(100),
+                  activeThumbColor: AppColors.primaryNavy,
+                );
+              },
+            ),
+            Consumer<SettingsProvider>(
+              builder: (context, settingsProvider, _) {
+                return SwitchListTile(
                   title: const Text('Email Updates'),
                   subtitle: const Text('Receive updates via email'),
                   value: settingsProvider.emailUpdates,

@@ -12,7 +12,7 @@ class AppColors {
   
   // Text Colors
   static const Color textPrimary = Color(0xFF1E2541);
-  static const Color textSecondary = Color(0xFF8D92A3);
+  static const Color textSecondary = Color(0xFF000000); // Changed to pure black for better visibility
   static const Color textWhite = Color(0xFFFFFFFF);
   
   // Status Colors

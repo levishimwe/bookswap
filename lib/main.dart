@@ -8,6 +8,8 @@ import 'providers/book_provider.dart';
 import 'providers/swap_provider.dart';
 import 'providers/chat_provider.dart';
 import 'providers/settings_provider.dart';
+import 'providers/access_request_provider.dart';
+import 'providers/users_provider.dart';
 import 'screens/auth/splash_screen.dart';
 
 void main() async {
@@ -33,12 +35,20 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SwapProvider()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(create: (_) => AccessRequestProvider()),
+  ChangeNotifierProvider(create: (_) => UsersProvider()),
       ],
-      child: MaterialApp(
-        title: 'BookSwap',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        home: const SplashScreen(),
+      child: Consumer<SettingsProvider>(
+        builder: (context, settings, _) {
+          return MaterialApp(
+            title: 'BookSwap',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: settings.darkMode ? ThemeMode.dark : ThemeMode.light,
+            home: const SplashScreen(),
+          );
+        },
       ),
     );
   }

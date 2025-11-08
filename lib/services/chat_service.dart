@@ -81,6 +81,17 @@ class ChatService {
         'lastMessageTime': FieldValue.serverTimestamp(),
         'unreadCount.$receiverId': FieldValue.increment(1),
       });
+
+      // Flag for Cloud Function to send email notification (lightweight trigger field)
+      await _firestore.collection('notifications').add({
+        'type': 'chat_message',
+        'chatId': chatId,
+        'senderId': senderId,
+        'receiverId': receiverId,
+        'senderName': senderName,
+        'text': text,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
     } catch (e) {
       throw 'Failed to send message. Please try again.';
     }

@@ -7,11 +7,13 @@ class SettingsProvider with ChangeNotifier {
   
   bool _notificationsEnabled = true;
   bool _emailUpdates = true;
+  bool _darkMode = false;
   bool _isLoading = false;
   String? _errorMessage;
   
   bool get notificationsEnabled => _notificationsEnabled;
   bool get emailUpdates => _emailUpdates;
+  bool get darkMode => _darkMode;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   
@@ -21,6 +23,8 @@ class SettingsProvider with ChangeNotifier {
       final user = await _firestoreService.getUser(userId);
       if (user != null) {
         _notificationsEnabled = user.notificationsEnabled;
+        // Try to read theme from user's doc (optional)
+        // If not present, keep default false
         notifyListeners();
       }
     } catch (e) {
@@ -50,6 +54,20 @@ class SettingsProvider with ChangeNotifier {
   void toggleEmailUpdates(bool value) {
     _emailUpdates = value;
     notifyListeners();
+  }
+
+  /// Toggle dark mode (also persists to Firestore user doc if possible)
+  Future<void> toggleDarkMode(String userId, bool value) async {
+    try {
+      _darkMode = value;
+      notifyListeners();
+      await _firestoreService.updateUserSettings(userId, {
+        'darkMode': value,
+      });
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+    }
   }
   
   /// Clear error message

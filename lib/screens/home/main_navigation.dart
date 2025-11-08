@@ -6,7 +6,10 @@ import '../../providers/book_provider.dart';
 import '../../providers/swap_provider.dart';
 import '../../providers/chat_provider.dart';
 import '../../providers/settings_provider.dart';
+import '../../providers/access_request_provider.dart';
+import '../../providers/users_provider.dart';
 import '../browse/browse_listings_screen.dart';
+import 'home_screen.dart';
 import '../my_listings/my_listings_screen.dart';
 import '../chats/chats_list_screen.dart';
 import '../settings/settings_screen.dart';
@@ -23,6 +26,7 @@ class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
   
   final List<Widget> _screens = const [
+    HomeScreen(),
     BrowseListingsScreen(),
     MyListingsScreen(),
     ChatsListScreen(),
@@ -44,6 +48,9 @@ class _MainNavigationState extends State<MainNavigation> {
       Provider.of<SwapProvider>(context, listen: false).initialize(userId);
       Provider.of<ChatProvider>(context, listen: false).initialize(userId);
       Provider.of<SettingsProvider>(context, listen: false).initialize(userId);
+  Provider.of<UsersProvider>(context, listen: false).initialize();
+      // Access requests for books owned by the user
+      Provider.of<AccessRequestProvider>(context, listen: false).initialize(userId);
     }
   }
   
@@ -63,6 +70,11 @@ class _MainNavigationState extends State<MainNavigation> {
         selectedItemColor: AppColors.accentYellow,
         unselectedItemColor: AppColors.textSecondary,
         items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'Home',
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.explore_outlined),
             activeIcon: Icon(Icons.explore),

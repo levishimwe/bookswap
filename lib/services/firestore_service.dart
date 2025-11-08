@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/book_model.dart';
 import '../models/swap_model.dart';
 import '../models/user_model.dart';
+import '../models/access_request_model.dart';
 
 /// Firestore service for database operations
 class FirestoreService {
@@ -195,6 +196,53 @@ class FirestoreService {
       return books;
     } catch (e) {
       throw 'Failed to search books. Please try again.';
+    }
+  }
+
+  // ===== ACCESS REQUESTS =====
+
+  Future<String> createAccessRequest(AccessRequestModel request) async {
+    try {
+      final docRef = await _firestore.collection('access_requests').add(request.toMap());
+      return docRef.id;
+    } catch (e) {
+      throw 'Failed to send access request. Please try again.';
+    }
+  }
+
+  Stream<List<AccessRequestModel>> getAccessRequestsReceived(String ownerId) {
+    return _firestore
+        .collection('access_requests')
+        .where('ownerId', isEqualTo: ownerId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((s) => s.docs.map((d) => AccessRequestModel.fromFirestore(d)).toList());
+  }
+
+  Future<void> updateAccessRequestStatus({
+    required String requestId,
+    required String newStatus,
+  }) async {
+    try {
+      await _firestore.collection('access_requests').doc(requestId).update({
+        'status': newStatus,
+        'respondedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw 'Failed to update request. Please try again.';
+    }
+  }
+
+  Future<void> grantAccessToBook({
+    required String bookId,
+    required String userId,
+  }) async {
+    try {
+      await _firestore.collection('books').doc(bookId).update({
+        'allowedUserIds': FieldValue.arrayUnion([userId]),
+      });
+    } catch (e) {
+      throw 'Failed to grant access. Please try again.';
     }
   }
 }

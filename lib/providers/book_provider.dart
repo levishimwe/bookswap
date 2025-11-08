@@ -1,4 +1,4 @@
-import 'dart:io';
+// Removed file & bytes imports since we now use direct image URLs
 import 'package:flutter/material.dart';
 import '../models/book_model.dart';
 import '../services/firestore_service.dart';
@@ -19,7 +19,7 @@ class BookProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   
-  /// Initialize book provider
+  /// Initialize book provider with real-time Firestore listeners
   void initialize(String userId) {
     // Listen to all books
     _firestoreService.getAllBooks().listen((books) {
@@ -41,17 +41,13 @@ class BookProvider with ChangeNotifier {
     required String condition,
     required String ownerId,
     required String ownerName,
-    File? imageFile,
+    required String imageUrl, // now provided directly as external or asset path
+    String? linkUrl,
+    String? videoUrl,
   }) async {
     try {
       _setLoading(true);
       _errorMessage = null;
-      
-      // Upload image if provided
-      String? imageUrl;
-      if (imageFile != null) {
-        imageUrl = await _storageService.uploadBookImage(imageFile, ownerId);
-      }
       
       // Create book model
       final book = BookModel(
@@ -64,6 +60,8 @@ class BookProvider with ChangeNotifier {
         ownerName: ownerName,
         postedAt: DateTime.now(),
         isAvailable: true,
+        linkUrl: linkUrl,
+        videoUrl: videoUrl,
       );
       
       // Save to Firestore
@@ -78,37 +76,29 @@ class BookProvider with ChangeNotifier {
     }
   }
   
-  /// Update book listing
+  /// Update existing book
   Future<bool> updateBook({
     required String bookId,
     required String title,
     required String author,
     required String condition,
-    String? existingImageUrl,
-    File? newImageFile,
+    required String imageUrl, // direct path or URL
     required String ownerId,
+    String? linkUrl,
+    String? videoUrl,
   }) async {
     try {
       _setLoading(true);
       _errorMessage = null;
       
-      String? imageUrl = existingImageUrl;
-      
-      // Upload new image if provided
-      if (newImageFile != null) {
-        // Delete old image if exists
-        if (existingImageUrl != null) {
-          await _storageService.deleteImage(existingImageUrl);
-        }
-        imageUrl = await _storageService.uploadBookImage(newImageFile, ownerId);
-      }
-      
-      // Update book
+      // Update Firestore document
       final updates = {
         'title': title,
         'author': author,
         'condition': condition,
         'imageUrl': imageUrl,
+        if (linkUrl != null) 'linkUrl': linkUrl,
+        if (videoUrl != null) 'videoUrl': videoUrl,
       };
       
       await _firestoreService.updateBook(bookId, updates);
@@ -122,18 +112,18 @@ class BookProvider with ChangeNotifier {
     }
   }
   
-  /// Delete book listing
+  /// Delete book and its image
   Future<bool> deleteBook(String bookId, String? imageUrl) async {
     try {
       _setLoading(true);
       _errorMessage = null;
       
-      // Delete image if exists
+
       if (imageUrl != null) {
         await _storageService.deleteImage(imageUrl);
       }
       
-      // Delete book
+      
       await _firestoreService.deleteBook(bookId);
       
       _setLoading(false);
@@ -157,7 +147,7 @@ class BookProvider with ChangeNotifier {
     }
   }
   
-  /// Get book by ID
+  /// Get a specific book by ID
   Future<BookModel?> getBook(String bookId) async {
     try {
       return await _firestoreService.getBook(bookId);
@@ -168,19 +158,19 @@ class BookProvider with ChangeNotifier {
     }
   }
   
-  /// Clear error message
+  /// Clear errors
   void clearError() {
     _errorMessage = null;
     notifyListeners();
   }
   
-  /// Set loading state
+  /// Manage loading state
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
   }
   
-  /// Dispose
+
   @override
   void dispose() {
     super.dispose();
