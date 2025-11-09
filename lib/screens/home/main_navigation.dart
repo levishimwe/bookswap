@@ -13,6 +13,7 @@ import 'home_screen.dart';
 import '../my_listings/my_listings_screen.dart';
 import '../chats/chats_list_screen.dart';
 import '../settings/settings_screen.dart';
+import '../swaps/swap_requests_screen.dart';
 
 /// Main navigation with bottom navigation bar
 class MainNavigation extends StatefulWidget {
@@ -29,6 +30,7 @@ class _MainNavigationState extends State<MainNavigation> {
     HomeScreen(),
     BrowseListingsScreen(),
     MyListingsScreen(),
+    SwapRequestsScreen(), // New dedicated Requests screen (swap + access)
     ChatsListScreen(),
     SettingsScreen(),
   ];
@@ -84,6 +86,11 @@ class _MainNavigationState extends State<MainNavigation> {
             icon: Icon(Icons.library_books_outlined),
             activeIcon: Icon(Icons.library_books),
             label: 'My Listings',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.swap_horiz),
+            activeIcon: Icon(Icons.compare_arrows),
+            label: 'Requests',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.chat_bubble_outline),

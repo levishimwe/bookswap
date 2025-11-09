@@ -144,8 +144,7 @@ class ChatService {
       }
       await batch.commit();
     } catch (e) {
-      // Silently fail
-      print('Failed to mark messages as read: $e');
+      // Silently fail - non-critical operation
     }
   }
   

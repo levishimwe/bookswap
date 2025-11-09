@@ -197,10 +197,4 @@ class BookProvider with ChangeNotifier {
       return input;
     }
   }
-  
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
 }

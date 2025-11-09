@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_text_styles.dart';
-import '../../core/utils/helpers.dart';
 import '../../models/book_model.dart';
 import 'book_condition_chip.dart';
 
@@ -33,153 +31,104 @@ class BookCard extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    final content = verticalLayout
-        ? _buildVertical()
-        : _buildHorizontal();
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: InkWell(
-        onTap: showActions ? null : onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: content,
+    // Always use horizontal style matching screenshot
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE6F0FA), // light blue
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-    );
-  }
-  
-  Widget _buildVertical() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Big image on top
-        ClipRRect(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(12),
-            topRight: Radius.circular(12),
-          ),
-          child: AspectRatio(
-            aspectRatio: 3/4,
-            child: _resolveImageWidget(),
-          ),
-        ),
-        Padding(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: showActions ? null : onTap,
+        child: Padding(
           padding: const EdgeInsets.all(12),
-          child: Column(
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                book.title,
-                style: AppTextStyles.h4,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'By ${book.author}',
-                style: AppTextStyles.bodySmall,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 8),
-              BookConditionChip(condition: book.condition),
-              const SizedBox(height: 8),
-              if (showOwner)
-                Row(
+              _buildBookImage(),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.person_outline, size: 14, color: AppColors.textSecondary),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        book.ownerName,
+                    Text(
+                      book.title,
+                      style: AppTextStyles.h4,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'by ${book.author}',
+                      style: AppTextStyles.bodySmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    BookConditionChip(condition: book.condition),
+                    const SizedBox(height: 8),
+                    if (showOwner)
+                      Text(
+                        'Owner: ${book.ownerName}',
                         style: AppTextStyles.caption,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    Text(
-                      ' • ${Helpers.formatDate(book.postedAt)}',
-                      style: AppTextStyles.caption,
-                    ),
+                    if (showActions) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          if (onEdit != null)
+                            TextButton.icon(
+                              onPressed: onEdit,
+                              icon: const Icon(Icons.edit, size: 18),
+                              label: const Text('Edit'),
+                            ),
+                          if (onDelete != null)
+                            TextButton.icon(
+                              onPressed: onDelete,
+                              icon: const Icon(Icons.delete, size: 18),
+                              label: const Text('Delete'),
+                              style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                            ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
-              if (showActions) ...[
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    if (onEdit != null)
-                      TextButton.icon(
-                        onPressed: onEdit,
-                        icon: const Icon(Icons.edit, size: 18),
-                        label: const Text('Edit'),
+              ),
+              if (onSwap != null && !showActions)
+                Padding(
+                  padding: const EdgeInsets.only(left: 8, top: 4),
+                  child: ElevatedButton(
+                    onPressed: onSwap,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2196F3), // blue
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                    if (onDelete != null)
-                      TextButton.icon(
-                        onPressed: onDelete,
-                        icon: const Icon(Icons.delete, size: 18),
-                        label: const Text('Delete'),
-                        style: TextButton.styleFrom(foregroundColor: AppColors.error),
-                      ),
-                  ],
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                      elevation: 0,
+                    ),
+                    child: const Text('Swap', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
                 ),
-              ],
             ],
           ),
         ),
-      ],
-    );
-  }
-
-  Widget _buildHorizontal() {
-    return Padding(
-      padding: const EdgeInsets.all(12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildBookImage(),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(book.title, style: AppTextStyles.h4, maxLines: 2, overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 4),
-                Text('By ${book.author}', style: AppTextStyles.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 8),
-                BookConditionChip(condition: book.condition),
-                const SizedBox(height: 8),
-                if (showOwner)
-                  Row(
-                    children: [
-                      const Icon(Icons.person_outline, size: 14, color: AppColors.textSecondary),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          book.ownerName,
-                          style: AppTextStyles.caption,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Text(' • ${Helpers.formatDate(book.postedAt)}', style: AppTextStyles.caption),
-                    ],
-                  ),
-                if (showActions) ...[
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      if (onEdit != null)
-                        TextButton.icon(onPressed: onEdit, icon: const Icon(Icons.edit, size: 18), label: const Text('Edit')),
-                      if (onDelete != null)
-                        TextButton.icon(onPressed: onDelete, icon: const Icon(Icons.delete, size: 18), label: const Text('Delete'), style: TextButton.styleFrom(foregroundColor: AppColors.error)),
-                    ],
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
+  
 
   Widget _buildBookImage() {
     return Container(
