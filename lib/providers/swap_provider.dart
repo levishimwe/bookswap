@@ -49,11 +49,14 @@ class SwapProvider with ChangeNotifier {
       _setLoading(true);
       _errorMessage = null;
       
+      // Use imageBase64 if available, fallback to imageUrl
+      final imageUrl = book.imageBase64 ?? book.imageUrl ?? '';
+      
       final swap = SwapModel(
         id: '',
         bookId: book.id,
         bookTitle: book.title,
-        bookImageUrl: book.imageUrl ?? '',
+        bookImageUrl: imageUrl,
         senderId: senderId,
         senderName: senderName,
         receiverId: book.ownerId,

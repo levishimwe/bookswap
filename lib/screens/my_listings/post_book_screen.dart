@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
@@ -46,6 +47,14 @@ class _PostBookScreenState extends State<PostBookScreen> {
       _selectedCondition = widget.bookToEdit!.condition;
       _linkUrlController.text = widget.bookToEdit!.linkUrl ?? '';
       _videoUrlController.text = widget.bookToEdit!.videoUrl ?? '';
+      // Decode existing base64 image if available for preview
+      if (widget.bookToEdit!.imageBase64 != null && widget.bookToEdit!.imageBase64!.isNotEmpty) {
+        try {
+          _pickedBytes = base64Decode(widget.bookToEdit!.imageBase64!);
+        } catch (_) {
+          // Ignore decode errors
+        }
+      }
     }
   }
   
@@ -85,6 +94,7 @@ class _PostBookScreenState extends State<PostBookScreen> {
         author: _authorController.text.trim(),
         condition: _selectedCondition,
   imageBytes: _pickedBytes,
+        existingImageBase64: widget.bookToEdit!.imageBase64,
         ownerId: authProvider.currentUserId!,
         linkUrl: _linkUrlController.text.trim().isEmpty
             ? null

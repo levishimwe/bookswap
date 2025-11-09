@@ -149,7 +149,39 @@ class _ChatsListScreenState extends State<ChatsListScreen> {
                     final otherUserName = chat.getOtherParticipantName(currentUserId);
                     final unreadCount = chat.getUnreadCount(currentUserId);
 
-                    return ListTile(
+                    return Dismissible(
+                      key: Key(chat.id),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        color: AppColors.error,
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 16),
+                        child: const Icon(Icons.delete, color: Colors.white),
+                      ),
+                      confirmDismiss: (direction) async {
+                        return await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Delete Chat'),
+                            content: const Text('Delete this conversation?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                                child: const Text('Delete'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      onDismissed: (_) async {
+                        await chatProvider.deleteChat(chat.id);
+                      },
+                      child: ListTile(
                       leading: CircleAvatar(
                         backgroundColor: AppColors.primaryNavy,
                         child: Text(
@@ -208,6 +240,7 @@ class _ChatsListScreenState extends State<ChatsListScreen> {
                           ),
                         );
                       },
+                      ),
                     );
                   },
                 );

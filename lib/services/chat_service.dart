@@ -165,4 +165,77 @@ class ChatService {
     final ids = [userId1, userId2]..sort();
     return '${ids[0]}_${ids[1]}';
   }
+
+  /// Delete a chat conversation
+  Future<void> deleteChat(String chatId) async {
+    try {
+      // Delete all messages first
+      final messagesSnapshot = await _firestore
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .get();
+      
+      final batch = _firestore.batch();
+      for (var doc in messagesSnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+      
+      // Delete chat document
+      batch.delete(_firestore.collection('chats').doc(chatId));
+      
+      await batch.commit();
+    } catch (e) {
+      throw 'Failed to delete chat. Please try again.';
+    }
+  }
+
+  /// Delete a single message
+  Future<void> deleteMessage(String chatId, String messageId) async {
+    try {
+      await _firestore
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .doc(messageId)
+          .delete();
+    } catch (e) {
+      throw 'Failed to delete message. Please try again.';
+    }
+  }
+
+  /// Edit a message
+  Future<void> editMessage(String chatId, String messageId, String newText) async {
+    try {
+      await _firestore
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .doc(messageId)
+          .update({'text': newText});
+      
+      // Update last message in chat if this was the most recent
+      final chatDoc = await _firestore.collection('chats').doc(chatId).get();
+      if (chatDoc.exists) {
+        final lastMessageSnapshot = await _firestore
+            .collection('chats')
+            .doc(chatId)
+            .collection('messages')
+            .orderBy('timestamp', descending: true)
+            .limit(1)
+            .get();
+        
+        if (lastMessageSnapshot.docs.isNotEmpty) {
+          final lastMessage = lastMessageSnapshot.docs.first;
+          if (lastMessage.id == messageId) {
+            await _firestore.collection('chats').doc(chatId).update({
+              'lastMessage': newText,
+            });
+          }
+        }
+      }
+    } catch (e) {
+      throw 'Failed to edit message. Please try again.';
+    }
+  }
 }

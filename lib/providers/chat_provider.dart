@@ -116,6 +116,42 @@ class ChatProvider with ChangeNotifier {
     _isLoading = value;
     notifyListeners();
   }
+
+  /// Delete a chat conversation
+  Future<bool> deleteChat(String chatId) async {
+    try {
+      await _chatService.deleteChat(chatId);
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Delete a single message
+  Future<bool> deleteMessage(String chatId, String messageId) async {
+    try {
+      await _chatService.deleteMessage(chatId, messageId);
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Edit a message
+  Future<bool> editMessage(String chatId, String messageId, String newText) async {
+    try {
+      await _chatService.editMessage(chatId, messageId, newText);
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
   
   /// Dispose
   @override

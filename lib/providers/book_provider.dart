@@ -92,6 +92,7 @@ class BookProvider with ChangeNotifier {
     required String author,
     required String condition,
     Uint8List? imageBytes,
+    String? existingImageBase64,
     required String ownerId,
     String? linkUrl,
     String? videoUrl,
@@ -100,8 +101,8 @@ class BookProvider with ChangeNotifier {
       _setLoading(true);
       _errorMessage = null;
       
-      // Prepare base64 image if provided
-      String? imageBase64;
+      // Prepare base64 image if new one provided, else keep existing
+      String? imageBase64 = existingImageBase64;
       if (imageBytes != null && imageBytes.isNotEmpty) {
         final processed = await _compressBytes(imageBytes);
         imageBase64 = base64Encode(processed);

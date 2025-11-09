@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -137,17 +138,51 @@ class BookDetailScreen extends StatelessWidget {
     return Container(
       height: 300,
       color: AppColors.backgroundLight,
-      child: book.imageUrl != null
-          ? CachedNetworkImage(
-              imageUrl: book.imageUrl!,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => const Center(
-                child: CircularProgressIndicator(),
-              ),
-              errorWidget: (context, url, error) => _buildPlaceholder(),
-            )
-          : _buildPlaceholder(),
+      child: _resolveImageWidget(),
     );
+  }
+
+  /// Resolve which image widget to show
+  Widget _resolveImageWidget() {
+    // Priority 1: base64 encoded image
+    if (book.imageBase64 != null && book.imageBase64!.isNotEmpty) {
+      try {
+        final bytes = base64Decode(book.imageBase64!);
+        return Image.memory(
+          bytes,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+        );
+      } catch (e) {
+        return _buildPlaceholder();
+      }
+    }
+    
+    // Priority 2: URL (network or asset)
+    if (book.imageUrl != null && book.imageUrl!.isNotEmpty) {
+      if (book.imageUrl!.startsWith('http')) {
+        return CachedNetworkImage(
+          imageUrl: book.imageUrl!,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          placeholder: (context, url) => const Center(
+            child: CircularProgressIndicator(),
+          ),
+          errorWidget: (context, url, error) => _buildPlaceholder(),
+        );
+      } else {
+        return Image.asset(
+          book.imageUrl!,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+        );
+      }
+    }
+    
+    // Priority 3: Placeholder
+    return _buildPlaceholder();
   }
   
   Widget _buildPlaceholder() {

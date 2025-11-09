@@ -67,6 +67,38 @@ class _ChatScreenState extends State<ChatScreen> {
       text: text,
     );
   }
+
+  Future<void> _deleteMessage(String messageId) async {
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+    final success = await chatProvider.deleteMessage(widget.chatId, messageId);
+    
+    if (!mounted) return;
+    
+    if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(chatProvider.errorMessage ?? 'Failed to delete message'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  Future<void> _editMessage(String messageId, String newText) async {
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+    final success = await chatProvider.editMessage(widget.chatId, messageId, newText);
+    
+    if (!mounted) return;
+    
+    if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(chatProvider.errorMessage ?? 'Failed to edit message'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -109,7 +141,12 @@ class _ChatScreenState extends State<ChatScreen> {
                       itemBuilder: (context, index) {
                         final message = messages[index];
                         final isMe = message.senderId == currentUserId;
-                        return MessageBubble(message: message, isMe: isMe);
+                        return MessageBubble(
+                          message: message,
+                          isMe: isMe,
+                          onDelete: isMe ? (messageId) => _deleteMessage(messageId) : null,
+                          onEdit: isMe ? (messageId, currentText) => _editMessage(messageId, currentText) : null,
+                        );
                       },
                     );
                   },

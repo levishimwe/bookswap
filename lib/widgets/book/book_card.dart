@@ -201,7 +201,7 @@ class BookCard extends StatelessWidget {
     // Prefer inline base64 image if available
     if (book.imageBase64 != null && book.imageBase64!.isNotEmpty) {
       try {
-        final bytes = const Base64Decoder().convert(book.imageBase64!);
+        final bytes = base64Decode(book.imageBase64!);
         return Image.memory(bytes, fit: BoxFit.cover, errorBuilder: (c, e, s) => _buildPlaceholder());
       } catch (_) {
         // fall through to other methods
