@@ -4,7 +4,7 @@ import 'package:image/image.dart' as img;
 import 'package:flutter/material.dart';
 import '../models/book_model.dart';
 import '../services/firestore_service.dart';
-// Storage uploads removed; images are stored inline as base64 in Firestore
+// Images are stored inline as base64 in Firestore. PDF support removed; use external reading link.
 
 /// Book listings state provider
 class BookProvider with ChangeNotifier {
@@ -79,7 +79,8 @@ class BookProvider with ChangeNotifier {
       _setLoading(false);
       return true;
     } catch (e) {
-      _errorMessage = e.toString();
+      // More detailed error message
+      _errorMessage = 'Failed to create book: ${e.toString()}';
       _setLoading(false);
       return false;
     }
@@ -134,8 +135,6 @@ class BookProvider with ChangeNotifier {
     try {
       _setLoading(true);
       _errorMessage = null;
-      // No external storage deletion needed when using base64 inline images
-      
       await _firestoreService.deleteBook(bookId);
       
       _setLoading(false);

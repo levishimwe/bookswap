@@ -34,21 +34,31 @@ class FeaturedGallery extends StatelessWidget {
           itemBuilder: (context, index) {
             final f = kFeaturedBooks[index];
             return Card(
+              elevation: 2,
               clipBehavior: Clip.antiAlias,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
               child: InkWell(
                 onTap: () => _open(f.link),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    AspectRatio(
-                      aspectRatio: 16 / 9,
-                      child: Image.asset(
-                        f.asset,
-                        fit: BoxFit.cover,
-                        errorBuilder: (c, e, s) => Container(
-                          color: AppColors.backgroundLight,
-                          child: const Center(
-                            child: Icon(Icons.image_not_supported),
+                    ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
+                      ),
+                      child: AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: Image.asset(
+                          f.asset,
+                          fit: BoxFit.cover,
+                          errorBuilder: (c, e, s) => Container(
+                            color: AppColors.backgroundLight,
+                            child: const Center(
+                              child: Icon(Icons.image_not_supported),
+                            ),
                           ),
                         ),
                       ),

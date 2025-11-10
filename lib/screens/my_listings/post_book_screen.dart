@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
+// Removed PDF support: file_picker no longer needed
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -35,6 +36,7 @@ class _PostBookScreenState extends State<PostBookScreen> {
   String _selectedCondition = AppConstants.conditionGood;
   final ImagePicker _picker = ImagePicker();
   Uint8List? _pickedBytes; // supports web & mobile
+  // PDF fields removed; use link URL instead
   
   bool get isEditing => widget.bookToEdit != null;
   
@@ -78,7 +80,8 @@ class _PostBookScreenState extends State<PostBookScreen> {
       setState(() => _pickedBytes = bytes);
     }
   }
-  // Handle form submission
+
+  // PDF picking removed; users should supply an external reading link.
   // Handle form submission
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
@@ -93,8 +96,9 @@ class _PostBookScreenState extends State<PostBookScreen> {
         title: _titleController.text.trim(),
         author: _authorController.text.trim(),
         condition: _selectedCondition,
-  imageBytes: _pickedBytes,
+        imageBytes: _pickedBytes,
         existingImageBase64: widget.bookToEdit!.imageBase64,
+  // PDF removed
         ownerId: authProvider.currentUserId!,
         linkUrl: _linkUrlController.text.trim().isEmpty
             ? null
@@ -110,7 +114,8 @@ class _PostBookScreenState extends State<PostBookScreen> {
         condition: _selectedCondition,
         ownerId: authProvider.currentUserId!,
         ownerName: authProvider.currentUser!.displayName,
-  imageBytes: _pickedBytes,
+        imageBytes: _pickedBytes,
+  // PDF removed
         linkUrl: _linkUrlController.text.trim().isEmpty
             ? null
             : _linkUrlController.text.trim(),
@@ -177,6 +182,9 @@ class _PostBookScreenState extends State<PostBookScreen> {
                 ),
               ),
               const SizedBox(height: 24),
+              
+              // PDF picker removed. Use reading link below instead.
+              const SizedBox(height: 8),
               
               // Title
               CustomTextField(

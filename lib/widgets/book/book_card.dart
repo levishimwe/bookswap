@@ -136,10 +136,17 @@ class BookCard extends StatelessWidget {
       height: 100,
       decoration: BoxDecoration(
         color: AppColors.backgroundLight,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(16),
         child: _resolveImageWidget(),
       ),
     );

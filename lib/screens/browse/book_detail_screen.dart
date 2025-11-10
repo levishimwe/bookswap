@@ -14,6 +14,7 @@ import '../../providers/access_request_provider.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/book/book_condition_chip.dart';
 import '../chats/chat_screen.dart';
+// Removed inline PDF viewer. Use reading link tap instead.
 
 /// Book detail screen
 class BookDetailScreen extends StatelessWidget {
@@ -37,7 +38,7 @@ class BookDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Book Image
-            _buildBookImage(),
+            _buildBookImage(context),
             
             Padding(
               padding: const EdgeInsets.all(16),
@@ -134,11 +135,96 @@ class BookDetailScreen extends StatelessWidget {
     );
   }
   
-  Widget _buildBookImage() {
-    return Container(
-      height: 300,
-      color: AppColors.backgroundLight,
-      child: _resolveImageWidget(),
+  Widget _buildBookImage(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final currentUserId = authProvider.currentUserId ?? '';
+    final isOwner = book.ownerId == currentUserId;
+    final isApproved = isOwner || book.allowedUserIds.contains(currentUserId);
+  final hasLink = book.linkUrl != null && book.linkUrl!.isNotEmpty;
+    
+    return GestureDetector(
+      onTap: hasLink && isApproved
+          ? () async {
+              final uri = Uri.parse(book.linkUrl!);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            }
+          : null,
+      child: Stack(
+        children: [
+          Container(
+            height: 300,
+            color: AppColors.backgroundLight,
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+              child: _resolveImageWidget(),
+            ),
+          ),
+          if (hasLink && isApproved)
+            Positioned(
+              bottom: 16,
+              right: 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.accentYellow,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.menu_book, size: 20, color: AppColors.primaryNavy),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Tap to Read',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.primaryNavy,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          if (hasLink && !isApproved)
+            Positioned(
+              bottom: 16,
+              right: 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.lock, size: 18, color: Colors.white),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Read (Request Access)',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
