@@ -981,9 +981,12 @@ This project was created for academic purposes as part of a mobile app developme
 
 ## 👤 Author
 
-Created by: [Your Name]
-Student ID: [Your ID]
+Created by: Levis Ishimwe
+
+Student ID: i.levis@alustudent.com
+
 Course: Mobile App Development
+
 Assignment: Individual Assignment 2
 
 ---
